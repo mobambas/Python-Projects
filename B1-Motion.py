@@ -8,6 +8,7 @@ label.pack()
 img = PhotoImage(file = "snake.png")
 img = img.subsample(1)
 shape = canvas.create_image(100, 100, image = img)
+
 def pressed(event):
     global img
     img = PhotoImage(file="snake.png")
@@ -22,6 +23,20 @@ for num in range(1,i+1):
 x = 0
 l1  = [x in range(0,10)]
 print(l1)
+
+def clear_canvas():
+    canvas.delete("all")
+    
+clear_button = Button(root, text="Clear Canvas", command=clear_canvas)
+clear_button.pack()
+
+def resize_image(event):
+    global img
+    img = img.subsample(int(event.width/100))
+    canvas.itemconfig(shape, image=img)
+
+root.bind('<Configure>', resize_image)
+
 
 
 
