@@ -1,4 +1,5 @@
 import sqlite3
+from tkinter import messagebox
 
 class ATMDatabase:
     def __init__(self):
@@ -37,12 +38,14 @@ class ATMDatabase:
         self.connection.commit()
 
     def add_transaction(self, account_number, transaction_type, amount):
-        self.cursor.execute('INSERT INTO transactions (account_number, transaction_type, amount) VALUES (?, ?, ?)', (account_number, transaction_type, amount))
+        self.cursor.execute('INSERT INTO transactions (account_number, transaction_type, amount) VALUES (?, ?, ?)',
+                            (account_number, transaction_type, amount))
         self.connection.commit()
 
     def get_transaction_history(self, account_number):
         self.cursor.execute('SELECT * FROM transactions WHERE account_number = ?', (account_number,))
         return self.cursor.fetchall()
+
 
 class ATMTransaction:
     def __init__(self):
@@ -60,3 +63,23 @@ class ATMTransaction:
         ''')
 
         self.connection.commit()
+
+    def make_deposit(self, account_number, amount):
+        try:
+            self.cursor.execute('INSERT INTO transactions (account_number, transaction_type, amount) VALUES (?, ?, ?)',
+                                (account_number, 'Deposit', amount))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            messagebox._show('Transaction Error', f'Error during deposit: {str(e)}')
+            return False
+
+    def make_withdrawal(self, account_number, amount):
+        try:
+            self.cursor.execute('INSERT INTO transactions (account_number, transaction_type, amount) VALUES (?, ?, ?)',
+                                (account_number, 'Withdrawal', amount))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            messagebox._show('Transaction Error', f'Error during withdrawal: {str(e)}')
+            return False
