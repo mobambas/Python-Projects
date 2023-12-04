@@ -30,7 +30,7 @@ root.geometry("500x300")
 f1 = ("bold")
 
 # Labels and Entry
-label_instruction = Label(root, text="Please enter your weight:")
+label_instruction = Label(root, text="Please enter your weight in kilograms:")
 label_instruction.grid(row=0, column=0, columnspan=2, pady=10)
 
 entry_weight = Entry(root)
