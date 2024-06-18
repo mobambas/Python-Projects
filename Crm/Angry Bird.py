@@ -7,33 +7,49 @@ class AngryBirdGame:
         self.root.geometry("800x600")
         self.root.title("Angry Birds")
 
-        self.canvas = Canvas(root, width=800, height=600, bg="lightblue")
+        self.canvas = tk.Canvas(root, width=800, height=600, bg="lightblue")
         self.canvas.pack(pady=20)
 
-        self.bird = PhotoImage(file="red-bird3.png")
-        self.slingshot = PhotoImage(file="sling.png")
+        self.bird = tk.PhotoImage(file="red-bird3.png")
+        self.slingshot = tk.PhotoImage(file="sling.png")
+        self.pig = tk.PhotoImage(file="pig.png")
 
         self.sling_coordinates = (400, 400)
         self.bird_coordinates = (400, 400)
+        self.pig_coordinates = [(200, 200), (300, 300), (400, 400)]
 
         self.sling = self.canvas.create_image(self.sling_coordinates, image=self.slingshot)
         self.bird_obj = None
+        self.pig_objs = [self.canvas.create_image(coord, image=self.pig) for coord in self.pig_coordinates]
 
         self.canvas.bind("<B1-Motion>", self.drag_bird)
         self.canvas.bind("<ButtonRelease-1>", self.launch_bird)
 
+        self.level = 1
+        self.score = 0
+        self.birds_left = 5
+
+        self.level_label = tk.Label(root, text=f"Level: {self.level}")
+        self.level_label.pack()
+        self.score_label = tk.Label(root, text=f"Score: {self.score}")
+        self.score_label.pack()
+        self.birds_left_label = tk.Label(root, text=f"Birds Left: {self.birds_left}")
+        self.birds_left_label.pack()
+
     def drag_bird(self, event):
-        self.canvas.delete(self.bird_obj)
+        if self.bird_obj:
+            self.canvas.delete(self.bird_obj)
         self.bird_coordinates = (event.x, event.y)
         self.bird_obj = self.canvas.create_image(self.bird_coordinates, image=self.bird)
 
     def launch_bird(self, event):
-        self.canvas.delete(self.bird_obj)
-        self.animate_bird()
+        if self.bird_obj:
+            self.canvas.delete(self.bird_obj)
+            self.animate_bird(event)
 
-    def animate_bird(self):
-        target_x = random.randint(50, 750)
-        target_y = random.randint(50, 550)
+    def animate_bird(self, event):
+        target_x = event.x
+        target_y = event.y
 
         velocity_x = (target_x - self.bird_coordinates[0]) / 10
         velocity_y = (target_y - self.bird_coordinates[1]) / 10
@@ -43,8 +59,35 @@ class AngryBirdGame:
             self.canvas.update()
             self.root.after(30)
 
+        self.check_collision()
         self.canvas.delete(self.bird_obj)
+        self.birds_left -= 1
+        self.birds_left_label['text'] = f"Birds Left: {self.birds_left}"
+        if self.birds_left == 0:
+            self.game_over()
 
+    def check_collision(self):
+        for pig_obj, pig_coord in zip(self.pig_objs, self.pig_coordinates):
+            if math.hypot(self.bird_coordinates[0] - pig_coord[0], self.bird_coordinates[1] - pig_coord[1]) < 50:
+                self.canvas.delete(pig_obj)
+                self.pig_objs.remove(pig_obj)
+                self.pig_coordinates.remove(pig_coord)
+                self.score += 100
+                self.score_label['text'] = f"Score: {self.score}"
+                if not self.pig_objs:
+                    self.level_up()
+
+    def level_up(self):
+        self.level += 1
+        self.level_label['text'] = f"Level: {self.level}"
+        self.pig_coordinates = [(200, 200), (300, 300), (400, 400)]
+        self.pig_objs = [self.canvas.create_image(coord, image=self.pig) for coord in self.pig_coordinates]
+        self.birds_left = 5
+        self.birds_left_label['text'] = f"Birds Left: {self.birds_left}"
+
+    def game_over(self):
+        messagebox.showinfo("Game Over", f"Your final score is {self.score}.")
+        self.root.quit()
 
 p1 = (216, 176)
 p2 = (256, 175)
